@@ -7,6 +7,10 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
 /**
  * @brief compute the area of a triangle
  * @return area
@@ -104,7 +108,6 @@ void dda_line(
   auto dy = y1 - y0;
   // write some code below to paint pixel on the line with color `brightness`
   float m = dy / dx;
-  int i = 0;
 
   if (std::abs(dy) < std::abs(dx)) { 
     for (int x = std::min(x0, x1); x <= std::max(x0, x1); x++) {
