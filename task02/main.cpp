@@ -65,8 +65,51 @@ int number_of_intersection_ray_against_quadratic_bezier(
     const Eigen::Vector2f &pc,
     const Eigen::Vector2f &pe) {
   // comment out below to do the assignment
-  return number_of_intersection_ray_against_edge(org, dir, ps, pe);
+  // return number_of_intersection_ray_against_edge(org, dir, ps, pe);
   // write some code below to find the intersection between ray and the quadratic
+  
+  int n_int = 0;
+  Eigen::Vector2f ortho = Eigen::Vector2f(-dir.y(), dir.x());
+  //bezier = (1-t)^2 * ps + 2*(1-t) * t * pc + t^2 * pe = org + dir*s;
+  //(ps - 2pc + pe) * t^2 + (2pc - 2ps) * t + ps - org = dir*s; 
+  float orthoPs = ps.dot(ortho);
+  float orthoPc = pc.dot(ortho);
+  float orthoPe = pe.dot(ortho);
+  float orthoOrg = org.dot(ortho);
+
+  float a = orthoPs - 2*orthoPc + orthoPe;
+  float b = 2 * orthoPc - 2 * orthoPs;
+  float c = orthoPs - orthoOrg;
+
+  float delta = b*b - 4*a*c;
+  
+  if (delta < 0) {
+    return 0;
+  }
+  
+  float d = sqrt(delta);
+  float t1 = (-b + d)/(2*a);
+  float t2 = (-b - d)/(2*a);
+
+  float dirPs = ps.dot(dir);
+  float dirPc = pc.dot(dir);
+  float dirPe = pe.dot(dir);
+  float dirOrg = org.dot(dir);
+
+  if (t1 > 0 && t1 < 1) {
+    float s = ((dirPs - 2*dirPc + dirPe) * t1 * t1 + (2*dirPc - 2*dirPs) * t1 + dirPs - dirOrg)/dir.dot(dir);
+    if (s > 0) {
+      n_int++;
+    }
+  }
+  if (t2 > 0 && t2 < 1) {
+    float s = ((dirPs - 2*dirPc + dirPe) * t2 * t2 + (2*dirPc - 2*dirPs) * t2 + dirPs - dirOrg)/dir.dot(dir);
+    if (s > 0) {
+      n_int++;
+    }
+  }
+
+  return n_int;
 }
 
 int main() {
