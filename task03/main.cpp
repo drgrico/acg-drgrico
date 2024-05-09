@@ -63,12 +63,32 @@ void draw_3d_triangle_with_texture(
       const float area1 = (r2 - s).cross(r0 - s);
       const float area2 = (r0 - s).cross(r1 - s);
       if (area0 < 0. || area1 < 0. || area2 < 0.) { continue; } // the pixel is outside the triangle (r0, r1, r2)
-      Eigen::Vector3f bc = Eigen::Vector3f(area0, area1, area2) / (area0 + area1 + area2); // barycentric coordinate on screen
+      //Eigen::Vector3f bc = Eigen::Vector3f(area0, area1, area2) / (area0 + area1 + area2); // barycentric coordinate on screen
       // `bc` gives the barycentric coordinate **on the screen** and it is distorted.
       // Compute the barycentric coordinate ***on the 3d triangle** below that gives the correct texture mapping.
       // (Hint: formulate a linear system with 4x4 coefficient matrix and solve it to get the barycentric coordinate)
       Eigen::Matrix4f coeff;
       Eigen::Vector4f rhs;
+
+      //starting from the equation
+      // (x)                 (x')
+      // (y) proportional to (y') = (H*a) * alpha + (H*b) * beta + (H*c) * gamma = 
+      // (1)                 (w )
+
+      // = q0 * alpha + q1 * beta + q2 * gamma
+      //where H*a = q0, H*b = q1, H*c = q2 
+       
+      //the equation is adapted to create the 4x4 matrix and 4d vector
+      //last row is the condition: alpha + beta + gamma = 1
+      coeff << q0.x(), q1.x(), q2.x(), -s.x(),
+               q0.y(), q1.y(), q2.y(), -s.y(),
+               q0.w(), q1.w(), q2.w(), -1,
+               1, 1, 1, 0;
+
+      rhs << 0, 0, 0, 1;
+
+      //solving the linear system to find alpha, beta and gamma values
+      Eigen::Vector4f bc = coeff.colPivHouseholderQr().solve(rhs);
 
       // do not change below
       auto uv = uv0 * bc[0] + uv1 * bc[1] + uv2 * bc[2]; // uv coordinate of the pixel
