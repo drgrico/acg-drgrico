@@ -24,9 +24,16 @@ void main()
         // make sure the occlusion is correctly computed.
         // the mirror is behind the armadillo, so the reflected image should be behind the armadillo.
         // furthermore, make sure the occlusion is correctly computed for the reflected image.
-        //x0 = ???
-        //y0 = ???
-        //z0 = ???
+
+        vec3 point = vec3(x0, y0, z0);
+        vec3 reflected_point = point - 2.0 * dot(point - org, nrm) * nrm;
+        //the idea is to project the mirrored image on the mirror plane
+        vec3 point_on_mirror = reflected_point - dot(reflected_point - org, nrm)*nrm;
+
+        // Update the coordinates
+        x0 = reflected_point.x;
+        y0 = reflected_point.y;
+        z0 = point_on_mirror.z;
     }
     // do not edit below
 
