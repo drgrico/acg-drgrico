@@ -32,19 +32,73 @@ float rad_cylinder = 0.45; // radius of the cylinder
 float rad_sphere = 0.8; // radius of the sphere
 float box_size = 0.6; // size of box
 
+float opIntersection( float d1, float d2 )
+{
+    return max(d1,d2);
+}
+
+float opUnion( float d1, float d2 )
+{
+    return min(d1,d2);
+}
+
+float opSubtraction( float d1, float d2 )
+{
+    return max(-d1,d2);
+}
+
 /// singed distance function at the position `pos`
 float SDF(vec3 pos)
 {
   float d0 = sdCappedCylinder(pos, len_cylinder, rad_cylinder);
   // write some code to combine the signed distance fields above to design the object described in the README.md
-  return d0; // comment out and define new distance
+  vec3 p1 = vec3(pos.y, pos.x, pos.z);
+  vec3 p2 = vec3(pos.x, pos.z, pos.y);
+
+  float cyl1 = sdCappedCylinder(p1, len_cylinder, rad_cylinder);
+  float cyl2 = sdCappedCylinder(p2, len_cylinder, rad_cylinder);
+  
+  vec3 box = vec3(box_size, box_size, box_size);
+  float cube = sdBox(pos, box);
+
+  float sphere = sdSphere(pos, rad_sphere);
+
+  float firstU = opUnion(d0, cyl1);
+  float secondU = opUnion(firstU, cyl2);
+
+  float intersect = opIntersection(cube, sphere);
+  
+  return opSubtraction(secondU, intersect); // comment out and define new distance
 }
 
 /// RGB color at the position `pos`
 vec3 SDF_color(vec3 pos)
 {
   // write some code below to return color (RGB from 0 to 1) to paint the object describe in README.md
-  return vec3(0., 1., 0.); // comment out and define new color
+  float d0 = sdCappedCylinder(pos, len_cylinder, rad_cylinder);
+  vec3 p1 = vec3(pos.y, pos.x, pos.z);
+  vec3 p2 = vec3(pos.x, pos.z, pos.y);
+  float cyl1 = sdCappedCylinder(p1, len_cylinder, rad_cylinder);
+  float cyl2 = sdCappedCylinder(p2, len_cylinder, rad_cylinder);
+  
+  vec3 box = vec3(box_size, box_size, box_size);
+  float cube = sdBox(pos, box);
+
+  float sphere = sdSphere(pos, rad_sphere);
+
+  float firstU = opUnion(d0, cyl1);
+  float secondU = opUnion(firstU, cyl2);
+
+  float intersect = opIntersection(cube, sphere);
+
+
+  if (intersect < 0) {
+    return vec3(0., 1., 0.); 
+  }
+  if (cube < sphere) {
+    return vec3(0., 0., 1.);
+  }
+  return vec3(1., 0., 0.);
 }
 
 uniform float time; // current time given from CPU
