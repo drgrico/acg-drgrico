@@ -138,6 +138,27 @@ class HelloWorld(mglw.WindowConfig):
         # L is the graph Laplacian matrix a.k.a `self.matrix_laplace`
         # you may use `spsolve` to solve the liner system
         # spsolve: https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.spsolve.html#scipy.sparse.linalg.spsolve
+        
+        # Laplacian Deformation
+        # (x * D - x_def * D)(x - x_def) + (xL - x_ini*L)(x - x_ini)
+        # (x^2 * D - 2x*x_def*D + x_def^2*D) + (x^2*L - 2x*x_ini*L + x_ini^2*L) = 0
+        # derivate
+        # 2x*D - 2*x_def*D + 2x*L - 2x_ini*L = 0
+        # (D + L) * x = x_def*D + x_ini*L
+
+        # Problem 2:        
+        # A = self.matrix_laplace + self.matrix_fix 
+        # B = self.matrix_laplace.dot(self.vtx2xyz_ini) + self.matrix_fix.dot(self.vtx2xyz_def)
+
+        # for i in range(3): 
+        #     self.vtx2xyz_def[:, i] = spsolve(A, B[:, i]) 
+            
+        # Problem 3:
+        A = self.matrix_bilaplace + self.matrix_fix 
+        B = self.matrix_bilaplace.dot(self.vtx2xyz_ini) + self.matrix_fix.dot(self.vtx2xyz_def)
+
+        for i in range(3): 
+            self.vtx2xyz_def[:, i] = spsolve(A, B[:, i]) 
 
 
         # do not edit beyond here
@@ -199,7 +220,7 @@ class HelloWorld(mglw.WindowConfig):
             if rgb.shape[0] == 1000:
                 rgb = rgb[::2, ::2, :].copy('C')
             rgb = Image.fromarray(rgb)
-            ImageOps.flip(rgb).save("out.png")
+            ImageOps.flip(rgb).save("out_bilaplacian.png")
 
 
 def main():
